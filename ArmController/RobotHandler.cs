@@ -19,22 +19,12 @@ namespace ArmController
         public double _A1offset, _A2offset, _A4offset;
         private double[] _prevOffset = new double[6];
 
-        //Power
-        //SerialPortHelper _serialPortHelper;
         public RobotHandler(string ip, int port)
         {
             _ip = ip;
             _port = port;
             InitAngleKs();
             InitSocket(ip,port);
-            //try
-            //{
-            //    _serialPortHelper = new SerialPortHelper(ConfigHelper.GetInstance().MagnetPort, 9600);
-            //}
-            //catch (Exception e)
-            //{
-            //    LogHelper.GetInstance().ShowMsg("Init SerialPort fail:" + e.Message);
-            //}
         }
 
         public double VerticalValue
@@ -133,58 +123,15 @@ namespace ArmController
         #endregion       
 
         #region Move
-        /// <summary>
-        /// 根据偏移移动机械臂
-        /// </summary>
-        /// <param name="offsetData">距离基准的偏移</param>
-        [Obsolete]
-        public void MoveArm(double[] offsetData)
-        {
-            //if (!ArmMoved(offsetData))
-            //    return;
-
-            var correctedOffsetY1 = CalcYaw(offsetData[2], 1);//avoid offset larger than 180
-            double offsetA1 = correctedOffsetY1 * _A1k;//big arm H value,偏转角
-
-            var offsetP1 = offsetData[1];
-            double offsetA2 = CalcPitch(offsetP1, _A2k);//big arm V value，俯仰角
-
-            //小臂移动
-            var correctedOffsetY2 = CalcYaw(offsetData[5], 1);//avoid offset larger than 180
-            var correctedOffsetY2excludeY1 = CalcYaw((correctedOffsetY2 + correctedOffsetY1) * _Y2excludeY1k, 1);//y2独立于y1的偏移量
-
-            //LogHelper.GetInstance().ShowMsg("Y2独立偏移量：=============" + correctedOffsetY2excludeY1.ToString());
-            double offsetA4 = CalcA4(correctedOffsetY2excludeY1, _A4k);
-            //LogHelper.GetInstance().ShowMsg("A4移动：=============" + offsetA4);
-            //LogHelper.GetInstance().ShowMsg("小臂夹角：=============" + offsetA3);
-
-            //处理越界,机械臂最大移动范围
-            offsetA1 = SetBoundary(offsetA1, 170);
-            offsetA2 = SetBoundary(offsetA2, 120);
-            offsetA4 = SetBoundary(offsetA4, 120);
-            if (offsetA2 > _A2DownMax)//A2下移
-            {
-                offsetA2 = _A2DownMax;
-            }
-
-            string datatoSend = string.Format("<A1>{0}</A1><A2>{1}</A2><A3>{2}</A3><A4>{3}</A4><A5>{4}</A5><A6>{5}</A6><A7>{6}</A7>|", offsetA1.ToString(), offsetA2.ToString(), "0", offsetA4, "0", "0", "0");
-            asyncClient.Send(datatoSend);
-            //offsetData.CopyTo(_prevOffset, 0);
-            //LogHelper.GetInstance().ShowMsg("send to IIWA:=============" + datatoSend + "\n");
-        }
 
         /// <summary>
         /// 移动机械臂，参数为本次的姿态偏移角度
         /// </summary>
         public void MoveArm(double pitch1, double yaw1, double roll1, double pitch2, double yaw2, double roll2)
         {
-            //var correctedOffsetY1 = CalcYaw(yaw1, 1);//avoid offset larger than 180
-            //double offsetA1 = correctedOffsetY1 * _A1k;//big arm H value,偏转角
             double offsetA1 = roll1 * _A1k;//big arm H value,偏转角
             double offsetA2 = pitch1 * _A2k;
 
-            //var offsetP1 = pitch1;
-            //double offsetA2 = CalcPitch(offsetP1, _A2k);//big arm V value，俯仰角
             if(Math.Abs(offsetA1/offsetA2)>1.5)//主要移动方向为水平方向
             {
                 offsetA2 *= 0.25;
@@ -197,35 +144,16 @@ namespace ArmController
             _A2offset += offsetA2;
 
             //小臂移动
-            //var correctedOffsetY2 = CalcYaw(yaw2, 1);//avoid offset larger than 180
-            //var correctedOffsetY2excludeY1 = CalcYaw((correctedOffsetY2 + correctedOffsetY1) * _Y2excludeY1k, 1);//y2独立于y1的偏移量
 
-            //LogHelper.GetInstance().ShowMsg("Y2独立偏移量：=============" + correctedOffsetY2excludeY1.ToString());
-            //double offsetA4 = CalcA4(correctedOffsetY2excludeY1, _A4k);
-            //LogHelper.GetInstance().ShowMsg("A4移动：=============" + offsetA4);
-            //LogHelper.GetInstance().ShowMsg("小臂夹角：=============" + offsetA3);
             double offsetA4 = (roll2 - roll1)*_A4k;
             _A4offset += offsetA4;
             //处理越界,机械臂最大移动范围
-            //offsetA1 = SetBoundary(offsetA1, 170);
-            //offsetA2 = SetBoundary(offsetA2, 120);
-            //offsetA4 = SetBoundary(offsetA4, 120);
             _A1offset = Math.Round(SetBoundary(_A1offset, 170),1);
             _A2offset = Math.Round(SetBoundary(_A2offset, 120),1);
             _A4offset = Math.Round(SetBoundary(_A4offset, 120),1);
-            //if (offsetA2 > _A2DownMax)//A2下移
-            //{
-            //    offsetA2 = _A2DownMax;
-            //}
-            
-            //if (_A2offset > _A2DownMax)//A2下移
-            //{
-            //    _A2offset = _A2DownMax;
-            //}
 
-            //string datatoSend = string.Format("<A1>{0}</A1><A2>{1}</A2><A3>{2}</A3><A4>{3}</A4><A5>{4}</A5><A6>{5}</A6><A7>{6}</A7>|", offsetA1.ToString(), offsetA2.ToString(), "0", offsetA4, "0", "0", "0");
             string datatoSend = string.Format("<A1>{0}</A1><A2>{1}</A2><A3>{2}</A3><A4>{3}</A4><A5>{4}</A5><A6>{5}</A6><A7>{6}</A7>|", _A1offset.ToString(), _A2offset>_A2DownMax?_A2DownMax.ToString():_A2offset.ToString(), "0", _A4offset, "0", "0", "0");//A2offset:向下有保护
-            //LogHelper.GetInstance().ShowMsg("send to IIWA:=============" + datatoSend + "\n");
+
             asyncClient.Send(datatoSend);
         }
 
@@ -243,7 +171,7 @@ namespace ArmController
             var bigArmOffsetH = Math.Abs(offsetData[2] - _prevOffset[2]);
             var smallArmOffset = Math.Abs(offsetData[5] - _prevOffset[5]);
             var bigArmOffsetV = Math.Abs(offsetData[1] - _prevOffset[1]);
-            //LogHelper.GetInstance().ShowMsg(string.Format("距上次移动了Y1:{0},Y2:{1},P1:{2}", bigArmOffsetH.ToString(), smallArmOffset.ToString(), bigArmOffsetV.ToString()));
+
             if (bigArmOffsetH < 3 && smallArmOffset < 3 && bigArmOffsetV < 3)
             {
                 return false;
@@ -324,23 +252,6 @@ namespace ArmController
         {
             asyncClient.Send(string.Format("<Power>{0}</Power>|", powerType.ToString()));
         }
-
-        //[Obsolete]
-        //public void SetPower(int powerType)//0 off,1 on
-        //{
-        //    try
-        //    {
-        //        if (powerType == 1)//power on
-        //            _serialPortHelper.Send0x("55 01 12 00 00 00 01 69");
-        //        else
-        //            _serialPortHelper.Send0x("55 01 11 00 00 00 01 68");
-        //        LogHelper.GetInstance().ShowMsg("Set power:" + powerType);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        LogHelper.GetInstance().ShowMsg("Set Power fail:" + e.Message);
-        //    }
-        //}
 
         /// <summary>
         /// 机械臂下探控制

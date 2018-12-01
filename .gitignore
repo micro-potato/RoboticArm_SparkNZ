@@ -10,3 +10,6 @@
 *.cache
 *.exe
 *.xml
+*.ide-wal
+*.lock
+*.sln

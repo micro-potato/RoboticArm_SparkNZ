@@ -11,8 +11,6 @@ namespace ArmController
         internal delegate void DelInt(int arg);
         internal event DelInt PressStateChanged;
 
-        //internal delegate void DelVoid();
-        //internal event DelVoid PressReset;
         private SerialPortHelper _serialPortHelper;
 
         internal HanoiMonitor(string comPort)
@@ -23,10 +21,6 @@ namespace ArmController
 
         private void DataIn(string data)
         {
-            //if(data=="")//reset command
-            //{
-            //    PressReset?.Invoke();
-            //}
             int pressState = -1;
             //down:I(001,1),up:I(001,0)
             if (data.IndexOf("1)") >= 0)

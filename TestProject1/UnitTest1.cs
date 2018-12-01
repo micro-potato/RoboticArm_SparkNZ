@@ -149,14 +149,5 @@ namespace TestProject1
             //var state = a.GetButtonState(baseString);
             //Assert.AreEqual(1, state);
         }
-
-        [TestMethod]
-        public void CalcAngleOffset()
-        {
-            double angle1 = -178;
-            double angle2 = 132;
-            double offset = GesutreManger.CalcAngleOffset(angle1, angle2);
-            Assert.AreEqual(-46, offset);
-        }
     }
 }

@@ -16,14 +16,10 @@ namespace ArmController
         private string _buttonComport = "";
 
         private int _adjustElapse = 0;
-        //private double _validOffsetValue = 0;
 
         private EulerAngleSpeed _latestUpperArmAngleSpeed;
         private EulerAngleSpeed _latestForeArmAngleSpeed;
-        //private EulerAngleSpeed _latestRecordUpperArmAngleSpeed;
-        //private EulerAngleSpeed _latestRecordForeArmAngleSpeed;
-        //private EulerAngle _upperArmOffset = new EulerAngle();
-        //private EulerAngle _foreArmOffset = new EulerAngle();
+ 
         private double _speedK = 0.07;
         private double _minSpeed = 5;
         private double _maxSpeed = 150;
@@ -57,14 +53,12 @@ namespace ArmController
                 _upperArmMonitor.GetureResultUpdate += OnUpperArmUpdate;
                 _foreArmMonitor.GetureResultUpdate += OnForeArmUpdate;
                 _hanioMonitor.PressStateChanged += ButtonPressChanged;
-                //_hanioMonitor.PressReset += OnPressReset;
 
                 _monitorInterval = monitorInterval;
                 _monitorTimer = new System.Timers.Timer(_monitorInterval);
                 _monitorTimer.Elapsed += OnUpdateGestureResultTime;
 
                 _adjustElapse = adjustTime;
-                //_validOffsetValue = speedK;
 
                 _speedK = speedK;
                 _minSpeed = minSpeed;
@@ -127,31 +121,21 @@ namespace ArmController
 
         private void StartAdjust()
         {
-            //_adjustTimer = new System.Timers.Timer(3000);
-            //_adjustTimer.Elapsed += AdjustFinish;
             _adjustTimer.Start();
         }
 
         public void StartMonitor()
         {
-            //_upperArmMonitor.StartRecieve();
-            //_foreArmMonitor.StartRecieve();
-
             StartAdjust();
         }
 
         public void StopMonitor()
         {
             _monitorTimer.Stop();
-            //_upperArmMonitor.StopRecieve();
-            //_foreArmMonitor.StopRecieve();
-
         }
 
         private void AdjustFinish(object sender, System.Timers.ElapsedEventArgs e)
         {
-            //_latestRecordUpperArmAngleSpeed = _latestUpperArmAngleSpeed;
-            //_latestRecordForeArmAngleSpeed = _latestForeArmAngleSpeed;
             _adjustTimer.Stop();
             _monitorTimer.Start();
         }
@@ -161,28 +145,8 @@ namespace ArmController
         /// </summary>
         private void OnUpdateGestureResultTime(object sender, System.Timers.ElapsedEventArgs e)
         {
-            //_upperArmOffset = EulerAngleOffset(_latestRecordUpperArmAngleSpeed, _latestUpperArmAngleSpeed);
-            //_foreArmOffset = EulerAngleOffset(_latestRecordForeArmAngleSpeed, _latestForeArmAngleSpeed);
-
-            //bool isUpperArmMove = IsMove(_upperArmOffset);
-            //bool isForeArmMove= IsMove(_foreArmOffset);
-            //if (!isUpperArmMove && !isForeArmMove)//大臂及小臂角度变化太小，认为没有移动
-            //{
-            //    return;
-            //}
-            //if(isUpperArmMove)
-            //{
-            //    _latestRecordUpperArmAngleSpeed = _latestUpperArmAngleSpeed;
-            //}
-            //if(isForeArmMove)
-            //{
-            //    _latestRecordForeArmAngleSpeed = _latestForeArmAngleSpeed;
-            //}
             EulerAngle upperOffset = EulerAngleOffset(_latestUpperArmAngleSpeed);
-            //_upperArmOffset = AddOffset(upperOffset, _upperArmOffset);
             EulerAngle foreOffset = EulerAngleOffset(_latestForeArmAngleSpeed);
-            //_foreArmOffset= AddOffset(foreOffset, _foreArmOffset);
-            //GestureUpdated?.Invoke(_upperArmOffset, _foreArmOffset);
             GestureUpdated?.Invoke(upperOffset, foreOffset);
         }
 
@@ -220,68 +184,6 @@ namespace ArmController
             else return true;
         }
 
-       
-
-        //private bool IsMove(EulerAngleSpeed offsetAngle)
-        //{
-        //    if((Math.Abs(offsetAngle.Pitch)<_validOffsetValue)&& (Math.Abs(offsetAngle.Roll) < _validOffsetValue)&& (Math.Abs(offsetAngle.Yaw) < _validOffsetValue))
-        //    {
-        //        return false;
-        //    }
-        //    else
-        //    {
-        //        return true;
-        //    }
-        //}
-
-        /// <summary>
-        /// 计算两个欧拉角的差值
-        /// </summary>
-        /// <param name="angle1">被减数</param>
-        /// <param name="angle2">减数</param>
-        /// <returns></returns>
-        //public EulerAngleSpeed EulerAngleOffset(EulerAngleSpeed angle1, EulerAngleSpeed angle2)
-        //{
-        //    EulerAngleSpeed offsetAngle = new EulerAngleSpeed();
-        //    offsetAngle.Pitch = CalcAngleOffset(angle1.Pitch, angle2.Pitch);
-        //    offsetAngle.Yaw = CalcAngleOffset(angle1.Yaw, angle2.Yaw);
-        //    offsetAngle.Roll = CalcAngleOffset(angle1.Roll, angle2.Roll);
-        //    return offsetAngle;
-        //}
-
-        /// <summary>
-        /// 计算两个欧拉角的差值
-        /// </summary>
-        /// <param name="angle1">被减数</param>
-        /// <param name="angle2">减数</param>
-        /// <returns>修正后的值</returns>
-        //private double CalcAngleOffset(double angle1, double angle2)
-        //{
-        //    var offsetAngle = angle2 - angle1;
-        //    if (Math.Abs(offsetAngle) <= 180) return offsetAngle;
-        //    else
-        //    {
-        //        double distance1;
-        //        double distance2;
-        //        double nearAngle;//接近180，产生符号错误的角
-        //        if (offsetAngle > 0)
-        //        {
-        //            distance1 = Math.Abs(180 - Math.Abs(angle1));
-        //            distance2 = Math.Abs(180 - Math.Abs(angle2));
-        //            if (distance1 < distance2) nearAngle = angle1;
-        //            else nearAngle = angle2;
-        //            return offsetAngle - 2 * Math.Abs(nearAngle);
-        //        }
-        //        else
-        //        {
-        //            distance1 = Math.Abs(180 - Math.Abs(angle1));
-        //            distance2 = Math.Abs(180 - Math.Abs(angle2));
-        //            if (distance1 < distance2) nearAngle = angle1;
-        //            else nearAngle = angle2;
-        //            return offsetAngle + 2 * Math.Abs(nearAngle);
-        //        }
-        //    }
-        //}
 
         /// <summary>
         /// 1吸起，0松开

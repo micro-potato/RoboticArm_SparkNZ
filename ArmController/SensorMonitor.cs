@@ -11,16 +11,8 @@ namespace ArmController
     {
         private SerialPort _serialPort;
 
-        //internal struct EulerAngles
-        //{
-        //    internal double Roll, Pitch, Yaw;
-        //}
-        //private EulerAngles _sensorResult;
-
         private EulerAngleSpeed _sensorResult;
 
-
-        //internal delegate void DeleEulerAngles(EulerAngles angles);
         internal delegate void DeleEulerAngles(EulerAngleSpeed speed);
         internal event DeleEulerAngles GetureResultUpdate;
 
@@ -95,19 +87,6 @@ namespace ArmController
             Data[2] = BitConverter.ToInt16(byteData, 6);
             switch (byteData[1])
             {
-                //case 0x53://角度
-                //    Data[0] = Data[0] / 32768.0 * 180;
-                //    Data[1] = Data[1] / 32768.0 * 180;
-                //    Data[2] = Data[2] / 32768.0 * 180;
-                //    _sensorResult.Pitch = Math.Round(Data[0], 2);//x，pitch，俯仰角
-                //    _sensorResult.Yaw = Math.Round(Data[1], 2);//y,yaw,偏转角
-                //    _sensorResult.Roll = Math.Round(Data[2], 2);//z,roll,翻滚角
-
-                //    if (GetureResultUpdate != null)
-                //    {
-                //        GetureResultUpdate(_sensorResult);
-                //    }
-                //    break;
                 case 0x52://角速度
                     Data[0] = Data[0] / 32768.0 * 2000;
                     Data[1] = Data[1] / 32768.0 * 2000;
