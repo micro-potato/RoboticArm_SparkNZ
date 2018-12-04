@@ -19,7 +19,7 @@ namespace ArmController
         internal SensorMonitor(string comport)
         {
             _serialPort = new SerialPort(comport);
-            _serialPort.BaudRate = 9600;
+            _serialPort.BaudRate = 115200;
             _serialPort.DataReceived += _serialPort_DataReceived;
             try
             {
@@ -112,14 +112,25 @@ namespace ArmController
             _serialPort.Dispose();
         }
 
-        private void StartRecieve()
+        internal void StartRecieveData()
         {
-            _serialPort.DataReceived += _serialPort_DataReceived;
+            if (!_serialPort.IsOpen)
+            {
+                _serialPort.Open();
+                Thread.Sleep(5);
+                _serialPort.DataReceived += _serialPort_DataReceived;
+            }
+            
         }
 
-        private void StopRecieve()
+        internal void StopRecieveData()
         {
-            _serialPort.DataReceived -= _serialPort_DataReceived;
+            if(_serialPort.IsOpen)
+            {
+                _serialPort.DataReceived -= _serialPort_DataReceived;
+                _serialPort.Close();
+                _serialPort.Dispose();
+            }
         }
     }
 }
