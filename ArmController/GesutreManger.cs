@@ -27,7 +27,7 @@ namespace ArmController
         public delegate void DeleInt(int arg);
         public event DeleInt ButtonStateChange;
         public delegate void DelVoid();
-        public event DelVoid PressReset;
+        //public event DelVoid PressReset;
 
         private System.Timers.Timer _adjustTimer;
         private System.Timers.Timer _monitorTimer;
@@ -46,13 +46,13 @@ namespace ArmController
             _adjustTimer.Elapsed += AdjustFinish;
             try
             {
-                _hanioMonitor = new HanoiMonitor(_buttonComport);
+                //_hanioMonitor = new HanoiMonitor(_buttonComport);
                 _upperArmMonitor = new SensorMonitor(_upperArmComport);
                 _foreArmMonitor = new SensorMonitor(_foreArmComport);
                 
                 _upperArmMonitor.GetureResultUpdate += OnUpperArmUpdate;
                 _foreArmMonitor.GetureResultUpdate += OnForeArmUpdate;
-                _hanioMonitor.PressStateChanged += ButtonPressChanged;
+                //_hanioMonitor.PressStateChanged += ButtonPressChanged;
 
                 _monitorInterval = monitorInterval;
                 _monitorTimer = new System.Timers.Timer(_monitorInterval);
@@ -69,10 +69,10 @@ namespace ArmController
             }
         }
 
-        private void OnPressReset()
-        {
-            PressReset?.Invoke();
-        }
+        //private void OnPressReset()
+        //{
+        //    PressReset?.Invoke();
+        //}
 
         /// <summary>
         /// button state
@@ -126,12 +126,16 @@ namespace ArmController
 
         public void StartMonitor()
         {
+            _upperArmMonitor.StartRecieveData();
+            _foreArmMonitor.StartRecieveData();
             StartAdjust();
         }
 
         public void StopMonitor()
         {
             _monitorTimer.Stop();
+            _upperArmMonitor.StopRecieveData();
+            _foreArmMonitor.StopRecieveData();
         }
 
         private void AdjustFinish(object sender, System.Timers.ElapsedEventArgs e)

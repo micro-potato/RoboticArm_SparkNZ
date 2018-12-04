@@ -48,8 +48,8 @@ namespace MechanicalArm
             try
             {
                 InitGestureMotitor();
-                _resetMonitor = new ResetMonitor(_configs.ResetComm);
-                _resetMonitor.DataIn += ResetMonitorDataIn;
+                //_resetMonitor = new ResetMonitor(_configs.ResetComm);
+                //_resetMonitor.DataIn += ResetMonitorDataIn;
             }
             catch(Exception ex)
             {
@@ -155,22 +155,22 @@ namespace MechanicalArm
         private void InitGestureMotitor()
         {
             _gesutreManger = new GesutreManger(_configs.UpperArmPort, _configs.ForeArmPort, _configs.ButtonPort,_configs.SpeedK, _configs.MinSpeed,_configs.JointTimer);
-            _gesutreManger.PressReset += OnPressReset;
-            _gesutreManger.ButtonStateChange += OnButtonStateChange;
+            //_gesutreManger.PressReset += OnPressReset;
+            //_gesutreManger.ButtonStateChange += OnButtonStateChange;
             _gesutreManger.GestureUpdated += OnGestureUpdated;
         }
 
-        private void OnPressReset()
-        {
-            if(_isGestureDetected)
-            {
-                StopDetect();
-            }
-            else
-            {
-                StartDetect();
-            }
-        }
+        //private void OnPressReset()
+        //{
+        //    if(_isGestureDetected)
+        //    {
+        //        StopDetect();
+        //    }
+        //    else
+        //    {
+        //        StartDetect();
+        //    }
+        //}
 
         private void StartDetect()
         {
