@@ -16,6 +16,8 @@ namespace ArmController
         internal delegate void DeleEulerAngles(EulerAngleSpeed speed);
         internal event DeleEulerAngles GetureResultUpdate;
 
+        private bool _isDetecting = false;
+
         internal SensorMonitor(string comport)
         {
             _serialPort = new SerialPort(comport);
@@ -45,6 +47,12 @@ namespace ArmController
                 UInt16 usLength = 0;
                 try
                 {
+                    if (!_isDetecting)
+                    { Thread.Sleep(10);
+                        _serialPort.DiscardInBuffer();
+                        //_serialPort.DiscardOutBuffer();
+                        return;
+                    }
                     usLength = (UInt16)_serialPort.Read(RxBuffer, usRxLength, 700);
                 }
                 catch (Exception err)
@@ -79,6 +87,7 @@ namespace ArmController
         private DateTime TimeStart = DateTime.Now;
         private void DecodeData(byte[] byteData)
         {
+            
             double TimeElapse = (DateTime.Now - TimeStart).TotalMilliseconds / 1000;
             double[] Data = new double[4];
 
@@ -114,23 +123,12 @@ namespace ArmController
 
         internal void StartRecieveData()
         {
-            if (!_serialPort.IsOpen)
-            {
-                _serialPort.Open();
-                Thread.Sleep(5);
-                _serialPort.DataReceived += _serialPort_DataReceived;
-            }
-            
+            _isDetecting = true;
         }
 
         internal void StopRecieveData()
         {
-            if(_serialPort.IsOpen)
-            {
-                _serialPort.DataReceived -= _serialPort_DataReceived;
-                _serialPort.Close();
-                _serialPort.Dispose();
-            }
+            _isDetecting = false;
         }
     }
 }
